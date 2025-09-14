@@ -46,11 +46,18 @@
                   <!-- Judul -->
                   <h5 class="card-title fw-bold">{{ item.judul }}</h5>
 
-                    <div v-if="item.gambar" class="mb-3 text-center">
+                  <!-- Bukti -->
+                  <div v-if="item.gambar" class="mb-3 text-center">
                     <img :src="`http://localhost:8000/storage/${item.gambar}`" 
                         alt="Gambar Pengaduan" 
                         class="img-fluid rounded"
                         style="max-height: 200px; object-fit: cover;">
+                  </div>
+
+                  <!-- Kalau tidak ada gambar -->
+                  <div v-else class="mb-3 text-center d-flex align-items-center justify-content-center bg-light border rounded"
+                      style="height: 200px; font-style: italic; color: #888;">
+                    Tanpa Gambar
                   </div>
 
                   <!-- Isi -->

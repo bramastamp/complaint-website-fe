@@ -3,15 +3,32 @@
     <div class="form-container container">
       <h2 class="mb-4 fw-semibold">Buat Pengaduan Baru</h2>
 
-      <div class="alert alert-success" v-if="successMessage">{{ successMessage }}</div>
-      <div class="alert alert-danger" v-if="errorMessage">{{ errorMessage }}</div>
+      <div class="alert alert-success" v-if="successMessage">
+        {{ successMessage }}
+      </div>
+      <div class="alert alert-danger" v-if="errorMessage">
+        {{ errorMessage }}
+      </div>
 
-      <form @submit.prevent="submitForm" class="p-4 rounded bg-white" enctype="multipart/form-data">
+      <form
+        @submit.prevent="submitForm"
+        class="p-4 rounded bg-white"
+        enctype="multipart/form-data"
+      >
         <div class="mb-3">
           <label for="kategori" class="form-label">Kategori</label>
-          <select id="kategori" v-model="kategori_id" class="form-select" required>
+          <select
+            id="kategori"
+            v-model="kategori_id"
+            class="form-select"
+            required
+          >
             <option disabled value="">Pilih kategori</option>
-            <option v-for="kategori in kategoriList" :key="kategori.id" :value="kategori.id">
+            <option
+              v-for="kategori in kategoriList"
+              :key="kategori.id"
+              :value="kategori.id"
+            >
               {{ kategori.nama_kategori }}
             </option>
           </select>
@@ -19,29 +36,45 @@
 
         <div class="mb-3">
           <label for="judul" class="form-label">Judul</label>
-          <input type="text" id="judul" class="form-control" v-model="judul" required />
+          <input
+            type="text"
+            id="judul"
+            class="form-control"
+            v-model="judul"
+            required
+          />
         </div>
 
         <div class="mb-3">
           <label for="isi" class="form-label">Isi Pengaduan</label>
-          <textarea id="isi" class="form-control" rows="5" v-model="isi" required></textarea>
+          <textarea
+            id="isi"
+            class="form-control"
+            rows="5"
+            v-model="isi"
+            required
+          ></textarea>
         </div>
 
         <div class="mb-3">
           <label for="gambar" class="form-label">Upload Gambar</label>
-          <input 
-            type="file" 
-            id="gambar" 
+          <input
+            type="file"
+            id="gambar"
             class="form-control"
             accept="image/*"
-            @change="handleFileUpload" 
+            @change="handleFileUpload"
           />
         </div>
 
         <!-- Preview gambar -->
         <div v-if="gambarPreview" class="mb-3">
           <p>Preview:</p>
-          <img :src="gambarPreview" class="img-fluid rounded" style="max-height:200px">
+          <img
+            :src="gambarPreview"
+            class="img-fluid rounded"
+            style="max-height: 200px"
+          />
         </div>
 
         <div class="form-check mb-4">
@@ -56,19 +89,21 @@
           </label>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100">Kirim Pengaduan</button>
+        <button type="submit" class="btn btn-primary w-100">
+          Kirim Pengaduan
+        </button>
       </form>
     </div>
   </MainLayout>
 </template>
 
 <script>
-import axios from 'axios'
-import MainLayout from '../layouts/MainLayout.vue'
+import axios from 'axios';
+import MainLayout from '../layouts/MainLayout.vue';
 
 export default {
   components: {
-    MainLayout
+    MainLayout,
   },
   data() {
     return {
@@ -80,60 +115,61 @@ export default {
       gambarPreview: null, // untuk preview aman
       kategoriList: [],
       successMessage: '',
-      errorMessage: ''
-    }
+      errorMessage: '',
+    };
   },
   methods: {
     handleFileUpload(event) {
-      const file = event.target.files[0]
+      const file = event.target.files[0];
       if (file) {
-        this.gambar = file
-        this.gambarPreview = URL.createObjectURL(file) // simpan untuk preview
+        this.gambar = file;
+        this.gambarPreview = URL.createObjectURL(file); // simpan untuk preview
       }
     },
     async submitForm() {
       try {
-        const token = localStorage.getItem('token')
+        const token = localStorage.getItem('token');
 
-        let formData = new FormData()
-        formData.append('judul', this.judul)
-        formData.append('isi', this.isi)
-        formData.append('kategori_id', this.kategori_id)
-        formData.append('is_anonymous', this.is_anonymous ? 1 : 0)
+        let formData = new FormData();
+        formData.append('judul', this.judul);
+        formData.append('isi', this.isi);
+        formData.append('kategori_id', this.kategori_id);
+        formData.append('is_anonymous', this.is_anonymous ? 1 : 0);
         if (this.gambar) {
-          formData.append('gambar', this.gambar) // sesuai dengan key di backend
+          formData.append('gambar', this.gambar); // sesuai dengan key di backend
         }
 
         await axios.post('http://localhost:8000/api/pengaduan', formData, {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          }
-        })
+            'Content-Type': 'multipart/form-data',
+          },
+        });
 
-        this.successMessage = 'Pengaduan berhasil dikirim!'
-        this.judul = ''
-        this.isi = ''
-        this.kategori_id = ''
-        this.is_anonymous = false
-        this.gambar = null
-        this.gambarPreview = null
-        this.errorMessage = ''
+        this.successMessage = 'Pengaduan berhasil dikirim!';
+        this.judul = '';
+        this.isi = '';
+        this.kategori_id = '';
+        this.is_anonymous = false;
+        this.gambar = null;
+        this.gambarPreview = null;
+        this.errorMessage = '';
       } catch (error) {
-        this.errorMessage = 'Gagal mengirim pengaduan. Pastikan semua data valid.'
-        console.error(error.response?.data || error)
+        this.errorMessage =
+          'Gagal mengirim pengaduan. Pastikan semua data valid.';
+        console.error(error.response?.data || error);
       }
-    }
+    },
   },
   async created() {
     try {
-      const res = await axios.get('http://localhost:8000/api/kategori')
-      this.kategoriList = res.data
+      const res = await axios.get('http://localhost:8000/api/kategori');
+      this.kategoriList = res.data;
     } catch (error) {
-      console.error('Gagal memuat kategori:', error)
+      console.error('Gagal memuat kategori:', error);
     }
-  }
-}
+  },
+};
 </script>
 
 <style scoped>

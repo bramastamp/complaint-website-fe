@@ -1,55 +1,63 @@
 <template>
-  <div class="container mt-5">
-    <h2>Edit Pengaduan</h2>
+  <MainLayout>
+    <div class="form-container container">
+      <h2 class="mb-4 fw-semibold">Edit Pengaduan</h2>
 
-    <form @submit.prevent="updatePengaduan" class="mt-4">
-      <div class="mb-3">
-        <label for="judul" class="form-label">Judul</label>
-        <input
-          type="text"
-          id="judul"
-          v-model="form.judul"
-          class="form-control"
-          required
-        />
-      </div>
-
-      <div class="mb-3">
-        <label for="isi" class="form-label">Isi</label>
-        <textarea
-          id="isi"
-          v-model="form.isi"
-          class="form-control"
-          rows="5"
-          required
-        ></textarea>
-      </div>
-
-      <div class="mb-3">
-        <label for="gambar" class="form-label">Gambar (opsional)</label>
-        <input
-          type="file"
-          id="gambar"
-          class="form-control"
-          @change="handleFileUpload"
-        />
-        <!-- Preview gambar lama -->
-        <div v-if="previewUrl" class="mt-2">
-          <p>Preview Gambar:</p>
-          <img :src="previewUrl" alt="Preview" class="img-thumbnail" width="200" />
+      <form @submit.prevent="updatePengaduan" class="p-4 rounded bg-white" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label for="judul" class="form-label">Judul</label>
+          <input
+            type="text"
+            id="judul"
+            v-model="form.judul"
+            class="form-control"
+            required
+          />
         </div>
-      </div>
 
-      <button type="submit" class="btn btn-success">Update</button>
-    </form>
-  </div>
+        <div class="mb-3">
+          <label for="isi" class="form-label">Isi Pengaduan</label>
+          <textarea
+            id="isi"
+            v-model="form.isi"
+            class="form-control"
+            rows="5"
+            required
+          ></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label for="gambar" class="form-label">Upload Gambar (opsional)</label>
+          <input
+            type="file"
+            id="gambar"
+            class="form-control"
+            accept="image/*"
+            @change="handleFileUpload"
+          />
+        </div>
+
+        <!-- Preview gambar -->
+        <div v-if="previewUrl" class="mb-3">
+          <p>Preview:</p>
+          <img :src="previewUrl" class="img-fluid rounded" style="max-height:200px" />
+        </div>
+
+        <button type="submit" class="btn btn-success w-100">Update Pengaduan</button>
+      </form>
+    </div>
+  </MainLayout>
 </template>
 
 <script>
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import MainLayout from '../layouts/MainLayout.vue'
 
 export default {
+  components: {
+    MainLayout
+  },
   data() {
     return {
       form: {
@@ -131,12 +139,32 @@ export default {
 </script>
 
 <style scoped>
-.container {
-  max-width: 600px;
+.form-container {
+  font-family: 'Poppins', sans-serif;
 }
 
-.img-thumbnail {
-  border: 1px solid #ddd;
+form {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 6px 6px 20px 0px rgba(0, 0, 0, 0.1);
+  -webkit-box-shadow: 6px 6px 20px 0px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 6px 6px 20px 0px rgba(0, 0, 0, 0.1);
+}
+
+input,
+textarea,
+select {
+  font-size: 0.95rem;
   border-radius: 8px;
+}
+
+button {
+  border-radius: 8px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+h2 {
+  font-weight: 600;
 }
 </style>
