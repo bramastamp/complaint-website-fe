@@ -28,6 +28,16 @@
         <span>Buat Pengaduan</span>
       </router-link>
 
+      <router-link
+        v-if="isLoggedIn"
+        to="/lihat-kelas"
+        class="nav-link custom-nav-link d-flex align-items-center gap-2 mb-2"
+        :class="{ active: $route.path === '/lihat-kelas' }"
+      >
+        <i class="bi bi-building"></i>
+        <span>Lihat Kelas</span>
+      </router-link>
+
       <!-- Tombol Logout/Login -->
       <button
         @click="handleAuthAction"

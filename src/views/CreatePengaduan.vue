@@ -15,6 +15,28 @@
         class="p-4 rounded bg-white"
         enctype="multipart/form-data"
       >
+        <!-- Jika ada kelas yang dipilih dari DetailKelas -->
+        <div class="mb-3" v-if="kelas">
+          <label class="form-label">Kelas</label>
+          <input
+            type="text"
+            class="form-control"
+            :value="kelas.nama_kelas"
+            readonly
+          />
+        </div>
+
+        <!-- Kalau tidak lewat DetailKelas, bisa pilih manual -->
+        <div class="mb-3" v-else>
+          <label for="kelas" class="form-label">Pilih Kelas (opsional)</label>
+          <select id="kelas" v-model="kelas_id" class="form-select">
+            <option disabled value="">Pilih kelas</option>
+            <option v-for="item in kelasList" :key="item.id" :value="item.id">
+              {{ item.nama_kelas }}
+            </option>
+          </select>
+        </div>
+
         <div class="mb-3">
           <label for="kategori" class="form-label">Kategori</label>
           <select
@@ -102,17 +124,18 @@ import axios from 'axios';
 import MainLayout from '../layouts/MainLayout.vue';
 
 export default {
-  components: {
-    MainLayout,
-  },
+  components: { MainLayout },
   data() {
     return {
       judul: '',
       isi: '',
       kategori_id: '',
+      kelas_id: '', // id kelas (baik dari route atau dropdown)
+      kelas: null, // data kelas jika dari DetailKelas
+      kelasList: [], // fallback kalau mau pilih manual
       is_anonymous: false,
       gambar: null,
-      gambarPreview: null, // untuk preview aman
+      gambarPreview: null,
       kategoriList: [],
       successMessage: '',
       errorMessage: '',
@@ -123,21 +146,20 @@ export default {
       const file = event.target.files[0];
       if (file) {
         this.gambar = file;
-        this.gambarPreview = URL.createObjectURL(file); // simpan untuk preview
+        this.gambarPreview = URL.createObjectURL(file);
       }
     },
     async submitForm() {
       try {
         const token = localStorage.getItem('token');
-
         let formData = new FormData();
+
         formData.append('judul', this.judul);
         formData.append('isi', this.isi);
         formData.append('kategori_id', this.kategori_id);
+        if (this.kelas_id) formData.append('kelas_id', this.kelas_id);
         formData.append('is_anonymous', this.is_anonymous ? 1 : 0);
-        if (this.gambar) {
-          formData.append('gambar', this.gambar); // sesuai dengan key di backend
-        }
+        if (this.gambar) formData.append('gambar', this.gambar);
 
         await axios.post('http://localhost:8000/api/pengaduan', formData, {
           headers: {
@@ -150,6 +172,7 @@ export default {
         this.judul = '';
         this.isi = '';
         this.kategori_id = '';
+        this.kelas_id = '';
         this.is_anonymous = false;
         this.gambar = null;
         this.gambarPreview = null;
@@ -163,10 +186,19 @@ export default {
   },
   async created() {
     try {
-      const res = await axios.get('http://localhost:8000/api/kategori');
-      this.kategoriList = res.data;
+      const resKategori = await axios.get('http://localhost:8000/api/kategori');
+      this.kategoriList = resKategori.data;
+
+      if (this.kelasId) { // <-- props, bukan $route.params
+        const resKelas = await axios.get(`http://localhost:8000/api/kelas/${this.kelasId}`);
+        this.kelas = resKelas.data.data;
+        this.kelas_id = this.kelas.id;
+      } else {
+        const resKelasAll = await axios.get('http://localhost:8000/api/kelas');
+        this.kelasList = resKelasAll.data.data || [];
+      }
     } catch (error) {
-      console.error('Gagal memuat kategori:', error);
+      console.error('Gagal memuat data:', error);
     }
   },
 };
@@ -181,8 +213,6 @@ form {
   background-color: #fff;
   border-radius: 12px;
   box-shadow: 6px 6px 20px 0px rgba(0, 0, 0, 0.1);
-  -webkit-box-shadow: 6px 6px 20px 0px rgba(0, 0, 0, 0.1);
-  -moz-box-shadow: 6px 6px 20px 0px rgba(0, 0, 0, 0.1);
 }
 
 input,

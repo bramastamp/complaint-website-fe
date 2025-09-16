@@ -8,20 +8,31 @@ import DetailPengaduan from '../views/DetailPengaduan.vue'
 import EditPengaduan from '../views/EditPengaduan.vue'
 import AdminTanggapan from '../views/AdminTanggapan.vue'
 
+// >>> Tambahan baru
+import LihatKelas from '../views/LihatKelas.vue'
+import DetailKelas from '../views/DetailKelas.vue'
+
 const routes = [
   { path: '/dashboard', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/login', component: Login },
   { path: '/register', component: Register },
-  { path: '/pengaduan/create', component: CreatePengaduan },
+  { path: '/pengaduan/create', name: "CreatePengaduan", component: CreatePengaduan },
   { path: '/pengaduan/create/guest', component: CreatePengaduanGuest },
   { path: '/pengaduan/:id', component: DetailPengaduan },
   { path: '/pengaduan/edit/:id', component: EditPengaduan },
   { 
     path: '/tanggapan/:pengaduanId', 
     component: AdminTanggapan, 
-    props: true, // Tambahkan ini!
+    props: true, 
     meta: { requiresAuth: true, requiresRole: 'admin' } 
   },
+
+  // >>> Tambahan untuk fitur kelas
+  { path: '/lihat-kelas', name: "LihatKelas", component: LihatKelas, meta: { requiresAuth: true } },
+  { path: '/kelas/:id', name: "DetailKelas", component: DetailKelas, props: true, meta: { requiresAuth: true } },
+
+  // Buat pengaduan langsung untuk kelas tertentu (opsional param kelasId)
+  { path: '/pengaduan/create/:kelasId?', name: "CreatePengaduan", component: CreatePengaduan, props: true },
 ]
 
 const router = createRouter({
