@@ -125,14 +125,20 @@ import MainLayout from '../layouts/MainLayout.vue';
 
 export default {
   components: { MainLayout },
+  props: {
+    kelasId: { // << ini penting
+      type: [String, Number],
+      default: null,
+    },
+  },
   data() {
     return {
       judul: '',
       isi: '',
       kategori_id: '',
-      kelas_id: '', // id kelas (baik dari route atau dropdown)
-      kelas: null, // data kelas jika dari DetailKelas
-      kelasList: [], // fallback kalau mau pilih manual
+      kelas_id: '', 
+      kelas: null, 
+      kelasList: [], 
       is_anonymous: false,
       gambar: null,
       gambarPreview: null,
@@ -178,8 +184,7 @@ export default {
         this.gambarPreview = null;
         this.errorMessage = '';
       } catch (error) {
-        this.errorMessage =
-          'Gagal mengirim pengaduan. Pastikan semua data valid.';
+        this.errorMessage = 'Gagal mengirim pengaduan. Pastikan semua data valid.';
         console.error(error.response?.data || error);
       }
     },
@@ -189,11 +194,14 @@ export default {
       const resKategori = await axios.get('http://localhost:8000/api/kategori');
       this.kategoriList = resKategori.data;
 
-      if (this.kelasId) { // <-- props, bukan $route.params
+      if (this.kelasId) {
+        // kalau masuk dari DetailKelas
         const resKelas = await axios.get(`http://localhost:8000/api/kelas/${this.kelasId}`);
+        console.log("API kelas detail:", resKelas.data); // 👈 debug
         this.kelas = resKelas.data.data;
         this.kelas_id = this.kelas.id;
       } else {
+        // fallback pilih manual
         const resKelasAll = await axios.get('http://localhost:8000/api/kelas');
         this.kelasList = resKelasAll.data.data || [];
       }
