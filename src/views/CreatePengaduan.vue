@@ -3,32 +3,14 @@
     <div class="form-container container">
       <h2 class="mb-4 fw-semibold">Buat Pengaduan Baru</h2>
 
-      <div class="alert alert-success" v-if="successMessage">
-        {{ successMessage }}
-      </div>
-      <div class="alert alert-danger" v-if="errorMessage">
-        {{ errorMessage }}
-      </div>
-
       <form
         @submit.prevent="submitForm"
         class="p-4 rounded bg-white"
         enctype="multipart/form-data"
       >
-        <!-- Jika ada kelas yang dipilih dari DetailKelas -->
-        <div class="mb-3" v-if="kelas">
-          <label class="form-label">Kelas</label>
-          <input
-            type="text"
-            class="form-control"
-            :value="kelas.nama_kelas"
-            readonly
-          />
-        </div>
-
-        <!-- Kalau tidak lewat DetailKelas, bisa pilih manual -->
-        <div class="mb-3" v-else>
-          <label for="kelas" class="form-label">Pilih Kelas (opsional)</label>
+        <!-- Dropdown kelas (autofill tapi bisa diganti) -->
+        <div class="mb-3">
+          <label for="kelas" class="form-label">Pilih Kelas</label>
           <select id="kelas" v-model="kelas_id" class="form-select">
             <option disabled value="">Pilih kelas</option>
             <option v-for="item in kelasList" :key="item.id" :value="item.id">
@@ -120,31 +102,30 @@
 </template>
 
 <script>
-import axios from 'axios';
-import MainLayout from '../layouts/MainLayout.vue';
+import axios from "axios";
+import MainLayout from "../layouts/MainLayout.vue";
+import Swal from "sweetalert2";
 
 export default {
   components: { MainLayout },
   props: {
-    kelasId: { // << ini penting
+    kelasId: {
       type: [String, Number],
       default: null,
     },
   },
   data() {
     return {
-      judul: '',
-      isi: '',
-      kategori_id: '',
-      kelas_id: '', 
-      kelas: null, 
-      kelasList: [], 
+      judul: "",
+      isi: "",
+      kategori_id: "",
+      kelas_id: "",
+      kelas: null,
+      kelasList: [],
       is_anonymous: false,
       gambar: null,
       gambarPreview: null,
       kategoriList: [],
-      successMessage: '',
-      errorMessage: '',
     };
   },
   methods: {
@@ -156,57 +137,82 @@ export default {
       }
     },
     async submitForm() {
+      // ✅ Validasi manual dulu
+      if (!this.kategori_id || !this.judul || !this.isi) {
+        Swal.fire({
+          icon: "warning",
+          title: "Form belum lengkap",
+          text: "Kategori, Judul, dan Isi pengaduan wajib diisi.",
+        });
+        return;
+      }
+
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         let formData = new FormData();
 
-        formData.append('judul', this.judul);
-        formData.append('isi', this.isi);
-        formData.append('kategori_id', this.kategori_id);
-        if (this.kelas_id) formData.append('kelas_id', this.kelas_id);
-        formData.append('is_anonymous', this.is_anonymous ? 1 : 0);
-        if (this.gambar) formData.append('gambar', this.gambar);
+        formData.append("judul", this.judul);
+        formData.append("isi", this.isi);
+        formData.append("kategori_id", this.kategori_id);
+        if (this.kelas_id) formData.append("kelas_id", this.kelas_id);
+        formData.append("is_anonymous", this.is_anonymous ? 1 : 0);
+        if (this.gambar) formData.append("gambar", this.gambar);
 
-        await axios.post('http://localhost:8000/api/pengaduan', formData, {
+        await axios.post("http://localhost:8000/api/pengaduan", formData, {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         });
 
-        this.successMessage = 'Pengaduan berhasil dikirim!';
-        this.judul = '';
-        this.isi = '';
-        this.kategori_id = '';
-        this.kelas_id = '';
+        // ✅ Sweetalert sukses + redirect
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil!",
+          text: "Pengaduan berhasil dikirim.",
+          timer: 2000,
+          showConfirmButton: false,
+        }).then(() => {
+          this.$router.push("/dashboard");
+        });
+
+        // reset form
+        this.judul = "";
+        this.isi = "";
+        this.kategori_id = "";
+        this.kelas_id = "";
         this.is_anonymous = false;
         this.gambar = null;
         this.gambarPreview = null;
-        this.errorMessage = '';
       } catch (error) {
-        this.errorMessage = 'Gagal mengirim pengaduan. Pastikan semua data valid.';
+        Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text:
+            error.response?.data?.message ||
+            "Gagal mengirim pengaduan. Silakan coba lagi.",
+        });
         console.error(error.response?.data || error);
       }
     },
   },
   async created() {
     try {
-      const resKategori = await axios.get('http://localhost:8000/api/kategori');
+      const resKategori = await axios.get("http://localhost:8000/api/kategori");
       this.kategoriList = resKategori.data;
 
+      const resKelasAll = await axios.get("http://localhost:8000/api/kelas");
+      this.kelasList = resKelasAll.data.data || [];
+
       if (this.kelasId) {
-        // kalau masuk dari DetailKelas
-        const resKelas = await axios.get(`http://localhost:8000/api/kelas/${this.kelasId}`);
-        console.log("API kelas detail:", resKelas.data); // 👈 debug
+        const resKelas = await axios.get(
+          `http://localhost:8000/api/kelas/${this.kelasId}`
+        );
         this.kelas = resKelas.data.data;
         this.kelas_id = this.kelas.id;
-      } else {
-        // fallback pilih manual
-        const resKelasAll = await axios.get('http://localhost:8000/api/kelas');
-        this.kelasList = resKelasAll.data.data || [];
       }
     } catch (error) {
-      console.error('Gagal memuat data:', error);
+      console.error("Gagal memuat data:", error);
     }
   },
 };
@@ -214,7 +220,7 @@ export default {
 
 <style scoped>
 .form-container {
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 form {

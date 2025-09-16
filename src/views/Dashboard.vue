@@ -28,8 +28,8 @@
     </div>
     
     <div class="container mt-4" style="font-family: 'Poppins', sans-serif;">
-      <h2 v-if="role === 'admin'">Daftar Semua Pengaduan</h2>
-      <h2 class="" v-else>Daftar Pengaduan Saya</h2>
+      <h2 v-if="role === 'admin'" class="fw-semibold">Daftar Semua Pengaduan</h2>
+      <h2 class="fw-semibold" v-else>Daftar Pengaduan Saya</h2>
 
       <div v-if="loading">Memuat data...</div>
       <div v-else-if="pengaduans.length === 0">Belum ada pengaduan.</div>
@@ -69,6 +69,11 @@
                   <!-- Kategori -->
                   <p class="card-text text-end text-muted mb-1 mt-3">
                     Kategori: {{ item.kategori?.nama_kategori || 'Tidak ada kategori' }}
+                  </p>
+
+                  <!-- Kelas -->
+                  <p v-if="item.kelas" class="card-text text-end text-muted mb-1">
+                    Kelas: {{ item.kelas.nama_kelas }}
                   </p>
 
                   <!-- Status -->
@@ -136,6 +141,7 @@
 <script>
 import axios from 'axios'
 import MainLayout from '../layouts/MainLayout.vue'
+import Swal from 'sweetalert2'
 
 export default {
   components: {
@@ -161,7 +167,6 @@ export default {
     this.userId = parseInt(userId)
 
     try {
-      // Ambil pengaduan
       const endpoint = role === 'admin'
         ? 'http://localhost:8000/api/pengaduan/all'
         : 'http://localhost:8000/api/pengaduan/me'
@@ -172,19 +177,10 @@ export default {
 
       this.pengaduans = res.data
 
-      // Ambil daftar kategori
       const kategoriRes = await axios.get('http://localhost:8000/api/kategori', {
         headers: { Authorization: `Bearer ${token}` }
       })
-
       this.kategoriList = kategoriRes.data
-      this.kategoriList = [
-        { id: 1, nama_kategori: 'Fasilitas Sekolah' },
-        { id: 2, nama_kategori: 'Guru dan Staff' },
-        { id: 3, nama_kategori: 'Kegiatan Belajar' },
-        { id: 4, nama_kategori: 'Lain-lain' }
-      ]
-
     } catch (error) {
       console.error(error)
       this.$router.push('/login')
@@ -194,7 +190,18 @@ export default {
   },
   methods: {
     async hapusPengaduan(id) {
-      if (!confirm('Yakin ingin menghapus pengaduan ini?')) return
+      const result = await Swal.fire({
+        title: 'Yakin ingin menghapus?',
+        text: 'Pengaduan yang dihapus tidak bisa dikembalikan.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      })
+
+      if (!result.isConfirmed) return
 
       try {
         const token = localStorage.getItem('token')
@@ -204,19 +211,31 @@ export default {
           }
         })
         this.pengaduans = this.pengaduans.filter(p => p.id !== id)
+
+        Swal.fire({
+          title: 'Berhasil!',
+          text: 'Pengaduan berhasil dihapus.',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        })
       } catch (error) {
         console.error('Gagal menghapus:', error)
-        alert('Terjadi kesalahan saat menghapus pengaduan.')
+        Swal.fire({
+          title: 'Gagal!',
+          text: 'Terjadi kesalahan saat menghapus pengaduan.',
+          icon: 'error'
+        })
       }
     },
     statusClass(status) {
       switch (status.toLowerCase()) {
         case 'terkirim':
-          return 'text-primary fw-semibold';
+          return 'text-primary fw-semibold'
         case 'ditanggapi':
-          return 'text-success fw-semibold';
+          return 'text-success fw-semibold'
         default:
-          return 'text-muted';
+          return 'text-muted'
       }
     }
   },
@@ -244,12 +263,9 @@ export default {
 
           return (cocokJudul || cocokIsi) && cocokKategori
         })
-        .sort((a, b) => {
-          return (b.highlighted === true) - (a.highlighted === true)
-        })
+        .sort((a, b) => (b.highlighted === true) - (a.highlighted === true))
     }
   }
-
 }
 </script>
 

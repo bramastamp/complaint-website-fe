@@ -26,6 +26,22 @@
           ></textarea>
         </div>
 
+        <!-- Pilih kelas -->
+        <div class="mb-3">
+          <label for="kelas_id" class="form-label">Pilih Kelas</label>
+          <select
+            id="kelas_id"
+            v-model="form.kelas_id"
+            class="form-select"
+            required
+          >
+            <option value="" disabled>Pilih kelas</option>
+            <option v-for="kelas in kelasList" :key="kelas.id" :value="kelas.id">
+              {{ kelas.nama_kelas }}
+            </option>
+          </select>
+        </div>
+
         <div class="mb-3">
           <label for="gambar" class="form-label">Upload Gambar (opsional)</label>
           <input
@@ -55,16 +71,16 @@ import Swal from 'sweetalert2'
 import MainLayout from '../layouts/MainLayout.vue'
 
 export default {
-  components: {
-    MainLayout
-  },
+  components: { MainLayout },
   data() {
     return {
       form: {
         judul: '',
         isi: '',
+        kelas_id: '',   // tambahkan kelas_id
         gambar: null
       },
+      kelasList: [],
       previewUrl: null
     }
   },
@@ -73,17 +89,24 @@ export default {
     const token = localStorage.getItem('token')
 
     try {
+      // Ambil data pengaduan yang mau diedit
       const res = await axios.get(`http://localhost:8000/api/pengaduan/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       })
       this.form.judul = res.data.judul
       this.form.isi = res.data.isi
+      this.form.kelas_id = res.data.kelas_id   // set kelas yang sudah ada
 
       if (res.data.gambar) {
         this.previewUrl = `http://localhost:8000/storage/${res.data.gambar}`
       }
+
+      // Ambil daftar kelas
+      const kelasRes = await axios.get(`http://localhost:8000/api/kelas`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      this.kelasList = kelasRes.data.data || []
+
     } catch (error) {
       console.error('Gagal mengambil data:', error)
     }
@@ -101,6 +124,7 @@ export default {
         const formData = new FormData()
         formData.append('judul', this.form.judul)
         formData.append('isi', this.form.isi)
+        formData.append('kelas_id', this.form.kelas_id)  // ikutkan kelas_id
         if (this.form.gambar) {
           formData.append('gambar', this.form.gambar)
         }
