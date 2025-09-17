@@ -21,12 +21,12 @@
               :src="`http://localhost:8000/storage/${kelas.gambar}`"
               class="img-fluid rounded shadow-sm border"
               alt="Gambar kelas"
-              style="max-height: 300px; object-fit: cover;"
+              style="max-height: 300px; object-fit: cover"
             />
             <div
               v-else
               class="d-flex align-items-center justify-content-center bg-light border rounded shadow-sm"
-              style="height: 300px; font-style: italic; color: #888;"
+              style="height: 300px; font-style: italic; color: #888"
             >
               Tidak ada gambar
             </div>
@@ -35,21 +35,31 @@
           <!-- Detail -->
           <div class="col-md-7">
             <ul class="list-group shadow-sm rounded mb-4">
-              <li class="list-group-item d-flex justify-content-between align-items-center">
+              <li
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
                 <strong>Gedung:</strong>
-                <span>{{ kelas.gedung?.nama_gedung || "Tidak diketahui" }}</span>
+                <span>{{
+                  kelas.gedung?.nama_gedung || 'Tidak diketahui'
+                }}</span>
               </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
+              <li
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
                 <strong>PIC:</strong>
-                <span>{{ kelas.pic || "-" }}</span>
+                <span>{{ kelas.pic || '-' }}</span>
               </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
+              <li
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
                 <strong>Layout:</strong>
-                <span>{{ kelas.layout || "-" }}</span>
+                <span>{{ kelas.layout || '-' }}</span>
               </li>
-              <li class="list-group-item d-flex justify-content-between align-items-center">
+              <li
+                class="list-group-item d-flex justify-content-between align-items-center"
+              >
                 <strong>Standar Operasional:</strong>
-                <span>{{ kelas.standar_operasional || "-" }}</span>
+                <span>{{ kelas.standar_operasional || '-' }}</span>
               </li>
             </ul>
 
@@ -82,12 +92,12 @@
 </template>
 
 <script>
-import axios from "axios";
-import MainLayout from "../layouts/MainLayout.vue";
+import axios from 'axios';
+import MainLayout from '../layouts/MainLayout.vue';
 
 export default {
   components: { MainLayout },
-  props: ["id"], // pastikan route pakai props: true
+  props: ['id'], // pastikan route pakai props: true
   data() {
     return {
       kelas: null,
@@ -98,11 +108,11 @@ export default {
     try {
       const kelasId = this.id || this.$route.params.id;
       const res = await axios.get(`http://localhost:8000/api/kelas/${kelasId}`);
-      console.log("Detail Kelas API response:", res.data);
+      console.log('Detail Kelas API response:', res.data);
 
       this.kelas = res.data.data;
     } catch (error) {
-      console.error("Gagal ambil detail kelas:", error);
+      console.error('Gagal ambil detail kelas:', error);
     } finally {
       this.loading = false;
     }
@@ -112,9 +122,9 @@ export default {
 
 <style scoped>
 /* Import Google Fonts */
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 .font-poppins {
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif;
 }
 </style>

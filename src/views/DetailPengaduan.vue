@@ -10,6 +10,12 @@
         <span :class="statusClass(pengaduan.status)">{{ pengaduan.status || '-' }}</span>
       </p>
 
+      <!-- Tambahan Kelas -->
+      <p>
+        <strong>Kelas:</strong>
+        {{ pengaduan.kelas ? pengaduan.kelas.nama_kelas : '-' }}
+      </p>
+
       <p>
         <strong>Isi Pengaduan:</strong><br />
         {{ pengaduan.isi || '-' }}
